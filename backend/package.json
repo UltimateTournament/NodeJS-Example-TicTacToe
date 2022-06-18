@@ -4,24 +4,19 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
+    "build:release": "rm -rf dist && esbuild src/server.ts --bundle  --platform=node --outfile=dist/server.js",
     "prestart": "npm run build",
     "start": "node -r ts-node/register ./src/server.ts",
-    "dev": "nodemon",
-    "prepare": "husky install",
-    "release": "standard-version",
-    "release:major": "standard-version --release-as major",
-    "release:minor": "standard-version --release-as minor",
-    "release:patch": "standard-version --release-as patch",
-    "release:alpha": "standard-version --prerelease alpha",
-    "release:beta": "standard-version --prerelease beta"
+    "dev": "UA_MOCK_MODE=MOCK nodemon"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^3.29.0",
     "@fastify/cors": "^7.0.0",
+    "@ultimatearcade/server-sdk": "^0.0.7",
+    "fastify": "^3.29.0",
     "fastify-socket.io": "^3.0.0",
     "nanoid": "^3.3.4",
     "pino-pretty": "^8.0.0",
@@ -33,9 +28,8 @@
     "@commitlint/config-conventional": "^12.1.1",
     "@types/cors": "^2.8.10",
     "@types/node": "^16.0.0",
-    "husky": "^6.0.0",
+    "esbuild": "^0.14.45",
     "nodemon": "^2.0.7",
-    "standard-version": "^9.2.0",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
   }
