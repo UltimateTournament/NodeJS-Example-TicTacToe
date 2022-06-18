@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import Game from '@/components/Game.vue'
 import { gameState } from '@/stores/gameState'
+import { uaState } from '@/stores/UAState';
+import Game from '@/components/Game.vue'
+import HelloWorld from '@/components/HelloWorld.vue'
 
 </script>
 <script lang="ts">
@@ -8,12 +10,16 @@ export default {
   data() {
     return {
       game: gameState(),
+      ua: uaState(),
     }
   },
-  mounted() {
+  async mounted() {
     if (!this.game.isConnected) {
-      // TODO get dynamically
-      this.game.connect("http://localhost:7778")
+      await this.ua.init()
+      const serverAddress = /localhost|127.0.0.1(:\d+)?/.test(window.location.hostname) ?
+        "ws://localhost:7778/" :
+        window.location.protocol + "//" + this.ua.serverAddress
+      this.game.connect(serverAddress, this.ua.token)
     }
   }
 }
@@ -28,7 +34,7 @@ export default {
     </div>
   </header>
 
-  <Game />
+  <Game v-if="game.isConnected"/>
 </template>
 
 <style>

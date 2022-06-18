@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import {gameState} from "@/stores/gameState";
-import { computed } from '@vue/runtime-core';
+import { uaState } from '@/stores/UAState';
 </script>
 <script lang="ts">
 export default {
   data() {
     return {
-      state: computed(()=>gameState()),
+      state: gameState(),
+      ua: uaState(),
     }
   },
   methods: {
@@ -19,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <h3>You're playing {{state.ourSymbol}}</h3>
+  <h3>You (<b>{{ua.playerInfo.display_name}}</b>) are playing as {{state.ourSymbol}} against <b>{{state.opponentName}}</b></h3>
   <h4>{{state.state}}</h4>
   <div class="row">
     <div class="box" @click="place(0,0)">{{state.board[0][0]}}</div>
