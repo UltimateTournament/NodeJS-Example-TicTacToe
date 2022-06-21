@@ -69,6 +69,7 @@ export class TicTacToe {
         let playerName = ""
         try {
             const actResp = (await this.uaSDK.activatePlayer(msg.token)) as any as { display_name: string }
+            // this need to return a playerID so we can ensure players can't join twice!!!
             playerName = actResp.display_name
         } catch (err) {
             console.log("couldn't activate player: ", err)

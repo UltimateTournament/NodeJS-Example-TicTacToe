@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { gameState } from '@/stores/gameState'
+import { gameState, gameStates } from '@/stores/gameState'
 import { uaState } from '@/stores/UAState';
 import Game from '@/components/Game.vue'
 import HelloWorld from '@/components/HelloWorld.vue'
@@ -21,6 +21,12 @@ export default {
         window.location.protocol + "//" + this.ua.serverAddress
       this.game.connect(serverAddress, this.ua.token)
     }
+    this.game.$subscribe((e, s) => {
+      if ([gameStates.xWon, gameStates.oWon, gameStates.draw].indexOf(s.state) > -1) {
+        console.log("game ended: " + s.state)
+        this.ua.gameOver()
+      }
+    })
   }
 }
 </script>
@@ -34,7 +40,7 @@ export default {
     </div>
   </header>
 
-  <Game v-if="game.isConnected"/>
+  <Game v-if="game.isConnected" />
 </template>
 
 <style>
