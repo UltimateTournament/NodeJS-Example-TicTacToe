@@ -16,6 +16,7 @@ async function build(uaSDK: ArcadeServerSDK) {
     },
   })
   let game = new TicTacToe(uaSDK)
+  game.start()
 
   app.io.on('connection', socket => {
     socket.on('join', async msg => {

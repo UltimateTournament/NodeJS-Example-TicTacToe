@@ -12,25 +12,56 @@ enum gameStates {
 
 class Player { symbol: "X" | "O"; token: string }
 
-interface PublicGameState { 
+interface PublicGameState {
     state: gameStates
     board: string[][]
-    names: Record<"X" | "O", string> 
+    names: Record<"X" | "O", string>
 }
 
 export class TicTacToe {
-
     private players: Record<string, Player> = {}
     private playerCount = 0
     private currentPlayer = ""
-    private state: gameStates = gameStates.waitingForPlayers
+    private state = gameStates.waitingForPlayers
     private names = { O: "", X: "" }
     private board = [
         ["", "", ""],
         ["", "", ""],
         ["", "", ""]]
+    timeoutTimer: NodeJS.Timeout;
 
     constructor(private uaSDK: ArcadeServerSDK) {
+    }
+
+    start() {
+        this.timeoutTimer = setTimeout(this.turnTimeout, 2 * 60 * 1000)
+    }
+    async turnTimeout() {
+        switch (this.state) {
+            case gameStates.waitingForPlayers: {
+                await this.uaSDK.returnPool("timeout waiting for players")
+                break
+            }
+            case gameStates.xTurn: {
+                //X loses
+                const loser = this.getPlayer("X")?.token!
+                const winner = this.getPlayer("O")?.token!
+                await this.uaSDK.playerDefeated(loser, winner)
+                await this.uaSDK.settlePool(winner)
+                break
+            }
+            case gameStates.oTurn: {
+                //O loses
+                const loser = this.getPlayer("O")?.token!
+                const winner = this.getPlayer("X")?.token!
+                await this.uaSDK.playerDefeated(loser, winner)
+                await this.uaSDK.settlePool(winner)
+                break
+            }
+            default:
+                return
+        }
+        await this.uaSDK.shutdown()
     }
 
     private getPlayer(s: "X" | "O") {
@@ -80,6 +111,8 @@ export class TicTacToe {
                 }
             }
         }
+        clearTimeout(this.timeoutTimer)
+        this.timeoutTimer = setTimeout(this.turnTimeout, 2 * 60 * 1000)
         if (this.playerCount === 0) {
             this.playerCount++
             const playerID = nanoid()
@@ -146,6 +179,8 @@ export class TicTacToe {
             // invalid move
             return { gameOver: false }
         }
+        clearTimeout(this.timeoutTimer)
+        this.timeoutTimer = setTimeout(this.turnTimeout, 30 * 1000)
         this.board[msg.moveY][msg.moveX] = this.players[msg.playerID].symbol
         // it's the other player's turn
         for (const p in this.players) {
@@ -164,7 +199,7 @@ export class TicTacToe {
                 await this.uaSDK.playerDefeated(loser, winner)
                 await this.uaSDK.settlePool(winner)
             } else {
-                this.state = gameStates.oWon                
+                this.state = gameStates.oWon
                 const loser = this.getPlayer("O")?.token!
                 const winner = this.getPlayer("X")?.token!
                 await this.uaSDK.playerDefeated(loser, winner)
