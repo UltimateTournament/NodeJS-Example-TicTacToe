@@ -19,25 +19,28 @@ async function build(uaSDK: ArcadeServerSDK) {
   game.start()
 
   app.io.on('connection', socket => {
+    let playerID = ""
     socket.on('join', async msg => {
       console.log("got join ", msg)
-      const { response, gameState, refused } = await game.join(msg)
-      if (refused) {
+      const join = await game.join(msg)
+      if (join.refused) {
         // kick the player as the game didn't allow them to join
         console.log("refusing player")
         socket.disconnect(true);
+        return;
       }
-      if (response) {
-        socket.emit('join.response', response)
+      playerID = join.player_id
+      if (join.response) {
+        socket.emit('join.response', join.response)
       }
-      if (gameState) {
-        app.io.emit("game.state", gameState)
+      if (join.gameState) {
+        app.io.emit("game.state", join.gameState)
       }
     })
 
     socket.on('play', async msg => {
       console.log("got play ", msg)
-      const { response, gameState, gameOver } = await game.play(msg)
+      const { response, gameState, gameOver } = await game.play(playerID, msg)
       if (response) {
         socket.emit('play.response', response)
       }

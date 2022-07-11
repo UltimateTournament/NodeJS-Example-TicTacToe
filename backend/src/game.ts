@@ -1,5 +1,4 @@
 import type { ArcadeServerSDK } from '@ultimatearcade/server-sdk'
-import { nanoid } from 'nanoid'
 
 enum gameStates {
     waitingForPlayers = "waiting-for-players",
@@ -73,9 +72,13 @@ export class TicTacToe {
     }
 
     async join(msg: { playerID?: string, token: string }): Promise<{
-        response: { playerID: string, state: gameStates, symbol: string } | { refused: true },
+        response: { playerID: string, state: gameStates, symbol: string},
         gameState?: PublicGameState,
-        refused: boolean
+        refused: false, 
+        player_id: string 
+    } | {
+        response: { refused: true },
+        refused: true, 
     }> {
         if (!msg.token) {
             return {
@@ -93,15 +96,18 @@ export class TicTacToe {
                         playerID: msg.playerID,
                         symbol: this.players[msg.playerID].symbol,
                         state: this.state,
-                    }
+                    },
+                    player_id: msg.playerID,
                 }
             }
         }
         let playerName = ""
+        let player_id = ""
         try {
-            const actResp = (await this.uaSDK.activatePlayer(msg.token)) as any as { display_name: string }
+            const actResp = await this.uaSDK.activatePlayer(msg.token)
             // this need to return a playerID so we can ensure players can't join twice!!!
             playerName = actResp.display_name
+            player_id = actResp.player_id
         } catch (err) {
             console.log("couldn't activate player: ", err)
             return {
@@ -115,22 +121,22 @@ export class TicTacToe {
         this.timeoutTimer = setTimeout(this.turnTimeout, 2 * 60 * 1000)
         if (this.playerCount === 0) {
             this.playerCount++
-            const playerID = nanoid()
-            this.currentPlayer = playerID
-            this.players[playerID] = { symbol: "X", token: msg.token }
+            this.currentPlayer = player_id
+            this.players[player_id] = { symbol: "X", token: msg.token }
             this.names.X = playerName
             return {
                 refused: false,
                 response: {
-                    playerID,
-                    symbol: this.players[playerID].symbol,
+                    playerID: player_id,
+                    symbol: this.players[player_id].symbol,
                     state: this.state,
                 },
                 gameState: {
                     state: this.state,
                     board: this.board,
                     names: this.names,
-                }
+                },
+                player_id: player_id,
             }
         }
         if (this.playerCount === 1) {
@@ -139,23 +145,23 @@ export class TicTacToe {
                 // X starts
                 this.currentPlayer = p
             }
-            const playerID = nanoid()
-            this.players[playerID] = { symbol: "O", token: msg.token }
+            this.players[player_id] = { symbol: "O", token: msg.token }
             this.names.O = playerName
             this.state = gameStates.xTurn
             await this.uaSDK.lockPool()
             return {
                 refused: false,
                 response: {
-                    playerID: playerID,
-                    symbol: this.players[playerID].symbol,
+                    playerID: player_id,
+                    symbol: this.players[player_id].symbol,
                     state: this.state,
                 },
                 gameState: {
                     state: this.state,
                     board: this.board,
                     names: this.names,
-                }
+                },
+                player_id: player_id,
             }
         }
         return {
@@ -166,12 +172,12 @@ export class TicTacToe {
         }
     }
 
-    async play(msg: { playerID: string, moveX: number, moveY: number }): Promise<{
+    async play(playerID: string, msg: { moveX: number, moveY: number }): Promise<{
         response?: never;
         gameState?: PublicGameState;
         gameOver: boolean
     }> {
-        if (this.currentPlayer != msg.playerID) {
+        if (playerID == "" || this.currentPlayer != playerID) {
             // not your turn
             return { gameOver: false }
         }
@@ -181,7 +187,7 @@ export class TicTacToe {
         }
         clearTimeout(this.timeoutTimer)
         this.timeoutTimer = setTimeout(this.turnTimeout, 30 * 1000)
-        this.board[msg.moveY][msg.moveX] = this.players[msg.playerID].symbol
+        this.board[msg.moveY][msg.moveX] = this.players[playerID].symbol
         // it's the other player's turn
         for (const p in this.players) {
             if (p != this.currentPlayer) {
