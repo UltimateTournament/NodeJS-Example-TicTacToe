@@ -27,20 +27,34 @@ export default {
         this.ua.gameOver()
       }
     })
+  },
+  methods: {
+    changePageColor() {
+      // Generate random hex color
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      this.ua.settings.backgroundColor = color;
+      this.ua.storeSettings();
+    }
   }
 }
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-    <div class="wrapper">
-      <p v-if="!game.isConnected">connecting...</p>
-      <HelloWorld v-if="game.isConnected" msg="This is TicTacToe!" />
-    </div>
-  </header>
+  <div class="game-page" @dblclick="changePageColor" :style="{ backgroundColor: ua.settings.backgroundColor }">
+    <header>
+      <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+      <div class="wrapper">
+        <p v-if="!game.isConnected">connecting...</p>
+        <HelloWorld v-if="game.isConnected" msg="This is TicTacToe!" />
+      </div>
+    </header>
 
-  <Game v-if="game.isConnected" />
+    <Game v-if="game.isConnected" />
+  </div>
 </template>
 
 <style>
@@ -69,5 +83,11 @@ a,
   text-decoration: none;
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
+}
+
+.game-page {
+  padding: 1rem;
+  min-height: calc(100vh - 4rem);
+  background-color: transparent;
 }
 </style>
