@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import {getSDK} from '@ultimatearcade/client-sdk'
 import type {PlayerInfo} from '@ultimatearcade/client-sdk'
+import { toRaw } from 'vue'
 
 interface Settings {
   backgroundColor?: string;
@@ -34,7 +35,7 @@ export const uaState = defineStore({
       await this._uaSDK.gameOver()
     },
     storeSettings() {
-      this._uaSDK.storeSettings(this.settings)
+      this._uaSDK.storeSettings(toRaw(this.settings))
     }
   }
 })
