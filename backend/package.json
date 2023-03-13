@@ -19,18 +19,18 @@
     "fastify": "^3.29.0",
     "fastify-socket.io": "^3.0.0",
     "nanoid": "^3.3.4",
-    "pino-pretty": "^8.0.0",
+    "pino-pretty": "^8.1.0",
     "reflect-metadata": "^0.1.13",
-    "socket.io": "^4.5.1"
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.1.1",
-    "@commitlint/config-conventional": "^12.1.1",
-    "@types/cors": "^2.8.10",
-    "@types/node": "^16.0.0",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@types/cors": "^2.8.13",
+    "@types/node": "^16.18.15",
     "esbuild": "^0.14.47",
-    "nodemon": "^2.0.7",
-    "ts-node": "^10.8.1",
-    "typescript": "^4.7.3"
+    "nodemon": "^2.0.21",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.5"
   }
 }
